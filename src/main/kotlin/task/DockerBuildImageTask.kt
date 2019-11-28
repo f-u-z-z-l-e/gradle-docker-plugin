@@ -4,7 +4,7 @@ import org.gradle.api.tasks.*
 import java.io.ByteArrayOutputStream
 import java.io.File
 
-class DockerBuildImageTask : Exec() {
+open class DockerBuildImageTask : Exec() {
 
     private val imageIdFilename: String = "imageid.txt"
 

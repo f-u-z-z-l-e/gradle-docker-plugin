@@ -7,7 +7,7 @@ import org.gradle.api.tasks.TaskAction
 import java.io.ByteArrayOutputStream
 import java.io.File
 
-class DockerRemoveImageTask : Exec() {
+open class DockerRemoveImageTask : Exec() {
 
     @Input
     lateinit var baseName: String

@@ -5,7 +5,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import java.io.ByteArrayOutputStream
 
-class DockerPushImageTask : Exec() {
+open class DockerPushImageTask : Exec() {
 
     @Input
     lateinit var baseName: String
