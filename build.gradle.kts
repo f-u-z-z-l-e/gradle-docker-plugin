@@ -22,3 +22,9 @@ gradlePlugin {
         }
     }
 }
+
+pluginBundle {
+    website = "https://github.com/f-u-z-z-l-e/gradle-docker-plugin"
+    vcsUrl = "https://github.com/f-u-z-z-l-e/gradle-docker-plugin"
+    tags = listOf("gradle-plugin", "docker", "docker-image-builder", "kotlin")
+}
