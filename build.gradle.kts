@@ -8,6 +8,10 @@ plugins {
     id("pl.droidsonroids.jacoco.testkit") version "1.0.5"
 }
 
+
+description = "gradle docker plugin"
+group = "ch.fuzzle.gradle.docker"
+
 repositories {
     mavenCentral()
 }
