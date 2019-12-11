@@ -1,0 +1,42 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - '*'
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: actions/checkout@v1
+
+      - name: Switch from detached state to branch
+        run: git checkout "${GITHUB_REF:11}"
+
+      # using a user token, as ${{ secrets.GITHUB_TOKEN }} would not trigger a subsequent build.
+      - name: Configure git remote
+        run: git remote set-url origin https://${{ github.actor }}:${{ secrets.ci_token }}@github.com/f-u-z-z-l-e/gradle-docker-plugin.git
+
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Build with Gradle
+        run: ./gradlew build jacocoTestReport
+
+      - name: Upload coverage to Codecov
+        if: success()
+        run: bash <(curl -s https://codecov.io/bash) -t ${{ secrets.codeconv_token }}
+
+      - name: Publish plugin to plugins.gradle.org
+        if: github.ref == 'refs/heads/master'
+        run: ./gradlew publishPlugin -Pgradle.publish.key=${{ secrets.gradle_pub_key }} -Pgradle.publish.secret=${{ secrets.gradle_pub_secret }}
+
+      - name: Tag commit & push to origin
+        run: ./gradlew tagHeadCommit pushTagToOrigin

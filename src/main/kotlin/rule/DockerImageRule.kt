@@ -12,18 +12,6 @@ import java.io.File
 @Suppress("UnstableApiUsage", "Unused")
 class DockerImageRule : RuleSource() {
 
-    @Managed
-    interface Docker {
-        var contextDirectory: File
-        var sourceContextPath: String
-        var relativeDockerfilePath: String
-        var artifactName: String
-        var artifactPath: String
-        var tag: String
-        var host: String
-        var imageId: File
-    }
-
     @Model
     fun Docker.docker() = Unit
 
@@ -49,10 +37,9 @@ class DockerImageRule : RuleSource() {
     }
 
     @Mutate
-    fun createDockerBuildImageTask(@Path("tasks") tasks: ModelMap<Task>, docker: Docker) {
-        val project = tasks.get("jar")?.project
+    fun ModelMap<Task>.createDockerBuildImageTask(docker: Docker) {
 
-        tasks.create("dockerPrepareContext", Copy::class.java) {
+        create("dockerPrepareContext", Copy::class.java) {
             description = "Copies docker context source and the build artifact to docker context."
             group = "Docker Image Building"
 
@@ -62,31 +49,29 @@ class DockerImageRule : RuleSource() {
             into(docker.contextDirectory)
         }
 
-        tasks.create("dockerBuildImage", DockerBuildImageTask::class.java) {
+        create("dockerBuildImage", DockerBuildImageTask::class.java) {
             artifactName = docker.artifactName
-            baseName = "${docker.host}/${project?.group}/${project?.name}"
+            baseName = "${docker.host}/${project.group}/${project.name}"
             context = docker.contextDirectory
             imageIdFile = docker.imageId
             relativeDockerfilePath = docker.relativeDockerfilePath
             tag = docker.tag
         }
 
-        tasks.get("dockerBuildImage")?.dependsOn("dockerPrepareContext")
+        get("dockerBuildImage")?.dependsOn("dockerPrepareContext")
     }
 
     @Mutate
-    fun createDockerPushImageTask(@Path("tasks") tasks: ModelMap<Task>, docker: Docker) {
-        val project = tasks.get("jar")?.project
-        tasks.create("dockerPushImage", DockerPushImageTask::class.java) {
-            baseName = "${docker.host}/${project?.group}/${project?.name}"
+    fun ModelMap<Task>.createDockerPushImageTask(docker: Docker) {
+        create("dockerPushImage", DockerPushImageTask::class.java) {
+            baseName = "${docker.host}/${project.group}/${project.name}"
         }
     }
 
     @Mutate
-    fun createDockerRemoveImageTask(@Path("tasks") tasks: ModelMap<Task>, docker: Docker) {
-        val project = tasks.get("jar")?.project
-        tasks.create("dockerRemoveImage", DockerRemoveImageTask::class.java) {
-            baseName = "${docker.host}/${project?.group}/${project?.name}"
+    fun ModelMap<Task>.createDockerRemoveImageTask(docker: Docker) {
+        create("dockerRemoveImage", DockerRemoveImageTask::class.java) {
+            baseName = "${docker.host}/${project.group}/${project.name}"
             imageIdFile = docker.imageId
         }
     }

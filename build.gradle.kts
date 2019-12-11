@@ -12,6 +12,14 @@ plugins {
 description = "gradle docker plugin"
 group = "ch.fuzzle.gradle.docker"
 
+dependencies {
+    testImplementation(gradleTestKit())
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.5.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.5.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.5.2")
+    testImplementation("org.hamcrest:hamcrest-library:2.1")
+}
+
 repositories {
     mavenCentral()
 }
@@ -31,4 +39,23 @@ pluginBundle {
     website = "https://github.com/f-u-z-z-l-e/gradle-docker-plugin"
     vcsUrl = "https://github.com/f-u-z-z-l-e/gradle-docker-plugin"
     tags = listOf("gradle-plugin", "docker", "docker-image-builder", "kotlin")
+}
+
+kotlinDslPluginOptions {
+    experimentalWarning.set(false)
+}
+
+
+tasks {
+    // Use the built-in JUnit support of Gradle.
+    "test"(Test::class) {
+        useJUnitPlatform()
+    }
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.isEnabled = true
+        html.isEnabled = false
+    }
 }
