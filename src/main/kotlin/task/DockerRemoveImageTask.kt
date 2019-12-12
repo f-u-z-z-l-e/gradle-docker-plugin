@@ -23,7 +23,7 @@ open class DockerRemoveImageTask : Exec() {
     @TaskAction
     override fun exec() {
         val stdout = ByteArrayOutputStream()
-        val imageId = imageIdFile.toString().substring(7)
+        val imageId = imageIdFile.readText().substring(7)
 
         commandLine = mutableListOf("docker", "rmi", "-f", imageId)
         standardOutput = stdout

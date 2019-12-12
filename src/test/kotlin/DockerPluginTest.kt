@@ -12,7 +12,7 @@ class DockerPluginTest : AbstractPluginTest() {
     @Throws(Exception::class)
     fun setup() {
         Assertions.assertTrue(Files.isDirectory(projectDir.toPath()))
-        buildFile = Files.createFile(projectDir.toPath().resolve("build.gradle")).toFile()
+        buildFile = Files.createFile(projectDir.toPath().resolve("build.gradle.kts")).toFile()
     }
 
     @Test
@@ -20,7 +20,15 @@ class DockerPluginTest : AbstractPluginTest() {
     fun `Apply plugin to project`() {
         // given
         val eol = System.getProperty("line.separator")
-        val buildFileContent = "plugins {  id('ch.fuzzle.gradle.docker-plugin')}$eol"
+        val buildFileContent = """
+            |plugins {
+            |  id ("ch.fuzzle.gradle.docker-plugin")
+            |}
+            |
+            |group = "ch.fuzzle"
+            |
+            |version = "1.0.0"
+            |""".trimMargin()
 
         writeFile(buildFile, buildFileContent)
 
@@ -41,4 +49,36 @@ class DockerPluginTest : AbstractPluginTest() {
         MatcherAssert.assertThat(result.output, Matchers.containsString("1 actionable task: 1 executed"))
         MatcherAssert.assertThat(result.output, Matchers.containsString("BUILD SUCCESSFUL"))
     }
+
+    @Test
+    @Throws(Exception::class)
+    fun `Build docker image and remove it afterwards`() {
+        // given
+        val eol = System.getProperty("line.separator")
+        val buildFileContent = """
+            |plugins {
+            |  id ("ch.fuzzle.gradle.docker-plugin")
+            |}
+            |
+            |group = "ch.fuzzle"
+            |
+            |version = "1.0.0"
+            |""".trimMargin()
+
+        writeFile(buildFile, buildFileContent)
+
+        // when
+        val result = GradleRunner.create()
+                .withProjectDir(projectDir)
+                .withPluginClasspath()
+                .withArguments("build", "dockerBuildImage", "dockerRemoveImage")
+                .forwardOutput()
+                .withJaCoCo()
+                .build()
+
+        // then
+        MatcherAssert.assertThat(result.output, Matchers.containsString("5 actionable tasks: 5 executed"))
+        MatcherAssert.assertThat(result.output, Matchers.containsString("BUILD SUCCESSFUL"))
+    }
+
 }

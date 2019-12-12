@@ -20,7 +20,7 @@ class DockerImageRule : RuleSource() {
         if (jarTask != null) {
             // used by copy task
             docker.sourceContextPath = "docker"
-            docker.contextDirectory = File("build/docker")
+            docker.contextDirectory = File(jarTask.project.buildDir, "docker")
             docker.artifactPath = jarTask.project.relativePath(jarTask.archiveFile.get().asFile)
 
             // used by build task

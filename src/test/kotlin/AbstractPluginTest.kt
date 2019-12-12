@@ -16,6 +16,41 @@ abstract class AbstractPluginTest {
     @Throws(Exception::class)
     fun setupProjectDirectories() {
         projectDir = Files.createDirectory(testDir.toPath().resolve("local")).toFile()
+        createJavaProjectFiles()
+        createDockerfile()
+    }
+
+    private fun createJavaProjectFiles() {
+        val javaSourceDirectory = Files.createDirectories(projectDir.toPath().resolve("src/main/java")).toFile()
+        val javaFile = Files.createFile(javaSourceDirectory.toPath().resolve("Main.java")).toFile()
+        val javaFileContent = """
+            |public class Main {
+            |    public static void main(String[] args) {
+            |        System.out.println("Running main class.");
+            |    }
+            |}
+            |""".trimMargin()
+
+        writeFile(javaFile,javaFileContent)
+    }
+
+    private fun createDockerfile() {
+        val sourceContextPath = Files.createDirectory(projectDir.toPath().resolve("docker")).toFile()
+        val dockerfile = Files.createFile(sourceContextPath.toPath().resolve("Dockerfile")).toFile()
+        val artifactFileString = "\${ARTIFACT_FILE}"
+        val javaOptsFile = "\${JAVA_OPTS}"
+        val dockerfileContent = """
+            |FROM openjdk:8-jdk-alpine
+            |
+            |EXPOSE 8080
+            |
+            |ARG ARTIFACT_FILE
+            |COPY "$artifactFileString" app.jar
+            |ENV JAVA_OPTS="-Xmx1g"
+            |ENTRYPOINT ["sh","-c","java $javaOptsFile -Djava.security.egd=file:/dev/./urandom -jar /app.jar"]
+            |""".trimMargin()
+
+        writeFile(dockerfile, dockerfileContent)
     }
 
     @Throws(IOException::class)
