@@ -33,6 +33,7 @@ class DockerImageRule : RuleSource() {
             val warTask: War = project.tasks["war"] as War
             docker.artifactPath = warTask.project.relativePath(warTask.archiveFile.get().asFile)
             docker.artifactName = warTask.archiveFileName.get()
+            docker.artifactConfig = File(warTask.project.relativePath("src/main/liberty"))
         } else {
             docker.artifactPath = jarTask.project.relativePath(jarTask.archiveFile.get().asFile)
             docker.artifactName = jarTask.archiveFileName.get()
@@ -48,6 +49,7 @@ class DockerImageRule : RuleSource() {
 
             from(docker.sourceContextPath)
             from(docker.artifactPath)
+            from(docker.artifactConfig)
 
             into(docker.contextDirectory)
         }

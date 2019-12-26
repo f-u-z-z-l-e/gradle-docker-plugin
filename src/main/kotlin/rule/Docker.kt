@@ -10,6 +10,7 @@ interface Docker {
     var relativeDockerfilePath: String
     var artifactName: String
     var artifactPath: String
+    var artifactConfig: File?
     var tag: String
     var host: String
     var imageId: File
