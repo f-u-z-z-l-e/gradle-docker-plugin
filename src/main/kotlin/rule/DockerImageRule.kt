@@ -2,7 +2,9 @@ package rule
 
 import org.gradle.api.Task
 import org.gradle.api.tasks.Copy
+import org.gradle.api.tasks.bundling.War
 import org.gradle.jvm.tasks.Jar
+import org.gradle.kotlin.dsl.get
 import org.gradle.model.*
 import task.DockerBuildImageTask
 import task.DockerPushImageTask
@@ -17,22 +19,23 @@ class DockerImageRule : RuleSource() {
 
     @Defaults
     fun setDefaults(docker: Docker, @Path("tasks.jar") jarTask: Jar?) {
-        if (jarTask != null) {
-            // used by copy task
-            docker.sourceContextPath = "docker"
-            docker.contextDirectory = File(jarTask.project.buildDir, "docker")
-            docker.artifactPath = jarTask.project.relativePath(jarTask.archiveFile.get().asFile)
+        val project = jarTask?.project
 
-            // used by build task
-            docker.relativeDockerfilePath = "."
-            docker.artifactName = jarTask.archiveFileName.get()
+        docker.sourceContextPath = "docker"
+        docker.contextDirectory = File(project?.buildDir, "docker")
+        docker.relativeDockerfilePath = "."
 
-            docker.tag = jarTask.project.version.toString()
-            docker.host = "docker.pkg.github.com/f-u-z-z-l-e"
-            docker.imageId = File(docker.contextDirectory, "imageid.txt")
+        docker.tag = project?.version.toString()
+        docker.host = "docker.pkg.github.com/f-u-z-z-l-e"
+        docker.imageId = File(docker.contextDirectory, "imageid.txt")
 
+        if (project?.pluginManager!!.hasPlugin("war")) {
+            val warTask: War = project.tasks["war"] as War
+            docker.artifactPath = warTask.project.relativePath(warTask.archiveFile.get().asFile)
+            docker.artifactName = warTask.archiveFileName.get()
         } else {
-            println("Jar task not found! Unable to set default values for dockerBuildImage task!")
+            docker.artifactPath = jarTask.project.relativePath(jarTask.archiveFile.get().asFile)
+            docker.artifactName = jarTask.archiveFileName.get()
         }
     }
 

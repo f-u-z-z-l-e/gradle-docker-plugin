@@ -19,7 +19,6 @@ class DockerPluginTest : AbstractPluginTest() {
     @Throws(Exception::class)
     fun `Apply plugin to project`() {
         // given
-        val eol = System.getProperty("line.separator")
         val buildFileContent = """
             |plugins {
             |  id ("ch.fuzzle.gradle.docker-plugin")
@@ -52,11 +51,41 @@ class DockerPluginTest : AbstractPluginTest() {
 
     @Test
     @Throws(Exception::class)
-    fun `Build docker image and remove it afterwards`() {
+    fun `Build docker image and remove it afterwards with jar`() {
         // given
-        val eol = System.getProperty("line.separator")
         val buildFileContent = """
             |plugins {
+            |  id ("ch.fuzzle.gradle.docker-plugin")
+            |}
+            |
+            |group = "ch.fuzzle"
+            |
+            |version = "1.0.0"
+            |""".trimMargin()
+
+        writeFile(buildFile, buildFileContent)
+
+        // when
+        val result = GradleRunner.create()
+                .withProjectDir(projectDir)
+                .withPluginClasspath()
+                .withArguments("build", "dockerBuildImage", "dockerRemoveImage")
+                .forwardOutput()
+                .withJaCoCo()
+                .build()
+
+        // then
+        MatcherAssert.assertThat(result.output, Matchers.containsString("5 actionable tasks: 5 executed"))
+        MatcherAssert.assertThat(result.output, Matchers.containsString("BUILD SUCCESSFUL"))
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun `Build docker image and remove it afterwards with war`() {
+        // given
+        val buildFileContent = """
+            |plugins {
+            |  id ("war")
             |  id ("ch.fuzzle.gradle.docker-plugin")
             |}
             |
